@@ -15,6 +15,16 @@
 ## 模块架构设计图
 ```mermaid
 graph TD
+    subgraph 独立管理器[独立管理器 - adguard-home-manager-mod]
+        M1[Flutter 应用<br>arm64-v8a] --> M2[自动读取 YAML<br>获取随机管理端口]
+        M2 --> M3[使用 root/root 凭证<br>连接 AGH API]
+        M3 --> M4[首页：全部保护开关<br>暂停时长选择]
+        M3 --> M5[日志·统计·DNS配置]
+        M3 --> M6[订阅链接 PROXY_URL<br>写入 config.prop]
+        M1 --> M7[通知栏快捷磁贴开关]
+        M1 --> M8[开机自启动 MainActivity]
+    end
+
     subgraph 安装流程[安装流程 - customize.sh]
         I1[开始安装] --> I2[检测Hosts模块冲突]
         I2 --> I3[停止旧进程·备份配置]
@@ -85,15 +95,17 @@ graph TD
     subgraph 卸载流程[卸载流程 - uninstall.sh]
         U1[开始卸载] --> U2[遍历 /proc 停止所有 AGH 及脚本进程]
         U2 --> U3[ProxyConfig --clean 还原代理配置]
-        U3 --> U4[清理 iptables 规则<br>（删除ADGUARD链·清空·删除IPv6规则）]
-        U4 --> U5[解锁 chattr 并删除残留文件<br>（广告目录·脚本·IFW等）]
+        U3 --> U4[清理 iptables 规则]
+        U4 --> U5[解锁 chattr 并删除残留文件]
         U5 --> U6[删除 AGH 残留目录]
         U6 --> U7[卸载完成，无残留]
     end
 
+    %% 垂直顺序：管理器 → 安装 → 启动 → 守护 → 卸载
+    独立管理器 -.->|可选工具，读取/写入配置| 安装流程
     安装流程 --> 启动主流程
     启动主流程 --> 守护脚本组
-    守护脚本组 -.-> 卸载流程
+    守护脚本组 --> 卸载流程
 
     style S5 fill:#f9f,stroke:#333
     style S6 fill:#bbf,stroke:#333
@@ -104,6 +116,9 @@ graph TD
     style D3 fill:#f5e1e1,stroke:#333
     style D4 fill:#f5f0e1,stroke:#333
     style DIR fill:#fff,stroke:#fff
+    style M1 fill:#e8d5f5,stroke:#333
+    style M7 fill:#d5f5e8,stroke:#333
+    style M8 fill:#d5f5e8,stroke:#333
 ```
 
 ## ⚠️ 风险提示，不看请别怪我没提醒
